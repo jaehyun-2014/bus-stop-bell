@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
@@ -441,61 +440,31 @@ class _SoundPathInputDialog extends StatefulWidget {
 }
 
 class _SoundPathInputDialogState extends State<_SoundPathInputDialog> {
-  String? selectedPath;
+  late TextEditingController controller;
 
-  Future<void> _pickAudioFile() async {
-    try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.audio,
-        allowMultiple: false,
-      );
-      
-      if (result != null && result.files.isNotEmpty) {
-        setState(() {
-          selectedPath = result.files.first.path;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('파일 선택 오류: $e')),
-        );
-      }
-    }
+  @override
+  void initState() {
+    super.initState();
+    controller = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('음성 파일 선택'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ElevatedButton.icon(
-            onPressed: _pickAudioFile,
-            icon: const Icon(Icons.folder_open),
-            label: const Text('파일 선택'),
-          ),
-          if (selectedPath != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('선택된 파일:', style: TextStyle(fontWeight: FontWeight.bold)),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Text(
-                      selectedPath!.split('/').last,
-                      style: const TextStyle(fontSize: 12),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
+      title: const Text('음성 파일 경로'),
+      content: TextField(
+        controller: controller,
+        decoration: const InputDecoration(
+          hintText: '예: /storage/emulated/0/Music/sound.mp3',
+          border: OutlineInputBorder(),
+        ),
+        autofocus: true,
       ),
       actions: [
         TextButton(
@@ -503,7 +472,7 @@ class _SoundPathInputDialogState extends State<_SoundPathInputDialog> {
           child: const Text('취소'),
         ),
         TextButton(
-          onPressed: selectedPath != null ? () => Navigator.pop(context, selectedPath) : null,
+          onPressed: () => Navigator.pop(context, controller.text),
           child: const Text('확인'),
         ),
       ],
