@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:file_picker/file_picker.dart';
+
 import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
@@ -130,13 +130,23 @@ class _HomeScreenState extends State<HomeScreen> {
     if (imageResult == null) return;
     imagePath = imageResult.path;
 
-    // 음성 파일 선택
-    final soundResult = await FilePicker.platform.pickFiles(
-      type: FileType.audio,
-      allowMultiple: false,
+    // 음성 파일 경로 입력 (임시 방식)
+    // 실제로는 파일 선택 다이얼로그가 필요하지만, 간단히 하기 위해 수동 입력
+    final soundPathResult = await showDialog<String>(
+      context: context,
+      builder: (context) => _SoundPathInputDialog(),
     );
-    if (soundResult == null || soundResult.files.isEmpty) return;
-    soundPath = soundResult.files.first.path;
+    if (soundPathResult == null || soundPathResult.isEmpty) return;
+    soundPath = soundPathResult;
+    
+    // 파일 존재 확인
+    if (!await File(soundPath).exists()) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('오류: 파일을 찾을 수 없습니다')),
+      );
+      return;
+    }
 
     if (!mounted) return;
 
@@ -364,6 +374,52 @@ class _HomeScreenState extends State<HomeScreen> {
         tooltip: '카드 추가',
         child: const Icon(Icons.add),
       ),
+    );
+  }
+}
+
+class _SoundPathInputDialog extends StatefulWidget {
+  @override
+  State<_SoundPathInputDialog> createState() => _SoundPathInputDialogState();
+}
+
+class _SoundPathInputDialogState extends State<_SoundPathInputDialog> {
+  late TextEditingController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('음성 파일 경로'),
+      content: TextField(
+        controller: controller,
+        decoration: const InputDecoration(
+          hintText: '예: /storage/emulated/0/Music/sound.mp3',
+          border: OutlineInputBorder(),
+        ),
+        autofocus: true,
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('취소'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(context, controller.text),
+          child: const Text('확인'),
+        ),
+      ],
     );
   }
 }
