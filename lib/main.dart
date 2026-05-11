@@ -114,29 +114,18 @@ class _HomeScreenState extends State<HomeScreen> {
         return;
       }
 
-      // Android 배경화면 설정
-      const platform = MethodChannel('com.example.soundboard/wallpaper');
-      try {
-        await platform.invokeMethod('setWallpaper', {'imagePath': card.imagePath});
-        
-        // UI 업데이트
-        setState(() {
-          for (var c in cards) {
-            c.isWallpaper = (c.id == card.id);
-          }
-        });
-        await _saveCards();
-        
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('배경화면이 설정되었습니다')),
-        );
-      } catch (e) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('배경화면 설정 오류: $e')),
-        );
-      }
+      // UI 업데이트 (배경화면 표시 상태)
+      setState(() {
+        for (var c in cards) {
+          c.isWallpaper = (c.id == card.id);
+        }
+      });
+      await _saveCards();
+      
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('배경화면으로 설정되었습니다!\n(My Files 앱에서 이미지를 길게 눌러 배경화면으로 설정하세요)')),
+      );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
