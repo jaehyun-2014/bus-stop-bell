@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-
 import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:async';
+import 'package:flutter/services.dart';
 
 void main() {
   runApp(const SoundboardApp());
@@ -34,12 +35,14 @@ class SoundCard {
   final String name;
   final String imagePath;
   final String soundPath;
+  final bool isWallpaper;
 
   SoundCard({
     required this.id,
     required this.name,
     required this.imagePath,
     required this.soundPath,
+    this.isWallpaper = false,
   });
 
   Map<String, dynamic> toJson() => {
@@ -47,6 +50,7 @@ class SoundCard {
     'name': name,
     'imagePath': imagePath,
     'soundPath': soundPath,
+    'isWallpaper': isWallpaper,
   };
 
   factory SoundCard.fromJson(Map<String, dynamic> json) => SoundCard(
@@ -54,6 +58,7 @@ class SoundCard {
     name: json['name'],
     imagePath: json['imagePath'],
     soundPath: json['soundPath'],
+    isWallpaper: json['isWallpaper'] ?? false,
   );
 }
 
@@ -96,6 +101,48 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _saveCards() async {
     final jsonString = jsonEncode(cards.map((card) => card.toJson()).toList());
     await prefs.setString('soundCards', jsonString);
+  }
+
+  Future<void> _setWallpaper(SoundCard card) async {
+    try {
+      final imageFile = File(card.imagePath);
+      if (!await imageFile.exists()) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('오류: 이미지 파일을 찾을 수 없습니다')),
+        );
+        return;
+      }
+
+      // Android 배경화면 설정
+      const platform = MethodChannel('com.example.soundboard/wallpaper');
+      try {
+        await platform.invokeMethod('setWallpaper', {'imagePath': card.imagePath});
+        
+        // UI 업데이트
+        setState(() {
+          for (var c in cards) {
+            c.isWallpaper = (c.id == card.id);
+          }
+        });
+        await _saveCards();
+        
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('배경화면이 설정되었습니다')),
+        );
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('배경화면 설정 오류: $e')),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('오류가 발생했습니다')),
+      );
+    }
   }
 
   Future<void> _playSound(SoundCard card) async {
@@ -341,6 +388,26 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                 ),
                             ],
+                          ),
+                        ),
+                        // 배경화면 설정 버튼
+                        Positioned(
+                          top: 8,
+                          left: 8,
+                          child: GestureDetector(
+                            onTap: () => _setWallpaper(card),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: card.isWallpaper ? Colors.green : Colors.blue.withOpacity(0.7),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              padding: const EdgeInsets.all(6),
+                              child: Icon(
+                                card.isWallpaper ? Icons.check : Icons.wallpaper,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                            ),
                           ),
                         ),
                         if (isEditMode)
