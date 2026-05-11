@@ -35,7 +35,7 @@ class SoundCard {
   final String name;
   final String imagePath;
   final String soundPath;
-  final bool isWallpaper;
+  bool isWallpaper;
 
   SoundCard({
     required this.id,
