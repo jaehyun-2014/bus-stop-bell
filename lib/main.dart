@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:file_picker/file_picker.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:async';
@@ -166,17 +167,16 @@ class _HomeScreenState extends State<HomeScreen> {
     if (imageResult == null) return;
     imagePath = imageResult.path;
 
-    // 음성 파일 경로 입력 (임시 방식)
-    // 실제로는 파일 선택 다이얼로그가 필요하지만, 간단히 하기 위해 수동 입력
-    final soundPathResult = await showDialog<String>(
-      context: context,
-      builder: (context) => _SoundPathInputDialog(),
+    // 파일 피커로 음성 파일 선택
+    final soundFileResult = await FilePicker.platform.pickFiles(
+      type: FileType.audio,
+      allowMultiple: false,
     );
-    if (soundPathResult == null || soundPathResult.isEmpty) return;
-    soundPath = soundPathResult;
+    if (soundFileResult == null || soundFileResult.files.isEmpty) return;
+    soundPath = soundFileResult.files.first.path;
     
     // 파일 존재 확인
-    if (!await File(soundPath).exists()) {
+    if (soundPath == null || !await File(soundPath).exists()) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('오류: 파일을 찾을 수 없습니다')),
