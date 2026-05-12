@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:file_picker/file_picker.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:async';
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 
 void main() {
   runApp(const SoundboardApp());
@@ -154,6 +154,17 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<String?> _pickAudioFile() async {
+    const platform = MethodChannel('com.example.soundboard/file');
+    try {
+      final String result = await platform.invokeMethod('pickAudioFile');
+      return result.isNotEmpty ? result : null;
+    } catch (e) {
+      print('Error: $e');
+      return null;
+    }
+  }
+
   Future<void> _addCard() async {
     String? imagePath;
     String? soundPath;
@@ -167,14 +178,28 @@ class _HomeScreenState extends State<HomeScreen> {
     if (imageResult == null) return;
     imagePath = imageResult.path;
 
-    // 파일 피커로 음성 파일 선택
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.audio,
-      allowMultiple: false,
-    );
-    if (result == null || result.files.isEmpty) return;
-    soundPath = result.files.first.path ?? '';
-    if (soundPath.isEmpty) return;
+    // 네이티브 인텐트로 파일 앱 열기
+    if (Platform.isAndroid) {
+      try {
+        final result = await _pickAudioFile();
+        if (result == null || result.isEmpty) return;
+        soundPath = result;
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('오류: 파일 앱을 열 수 없습니다')),
+        );
+        return;
+      }
+    } else {
+      // iOS나 다른 플랫폼
+      final pathResult = await showDialog<String>(
+        context: context,
+        builder: (context) => _SoundPathInputDialog(),
+      );
+      if (pathResult == null || pathResult.isEmpty) return;
+      soundPath = pathResult;
+    }
     
     // 파일 존재 확인
     if (soundPath == null || !await File(soundPath).exists()) {
