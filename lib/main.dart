@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:file_picker/file_picker.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:async';
@@ -166,13 +167,14 @@ class _HomeScreenState extends State<HomeScreen> {
     if (imageResult == null) return;
     imagePath = imageResult.path;
 
-    // 음성 파일 경로 입력
-    final soundPathResult = await showDialog<String>(
-      context: context,
-      builder: (context) => _SoundPathInputDialog(),
+    // 파일 피커로 음성 파일 선택
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.audio,
+      allowMultiple: false,
     );
-    if (soundPathResult == null || soundPathResult.isEmpty) return;
-    soundPath = soundPathResult;
+    if (result == null || result.files.isEmpty) return;
+    soundPath = result.files.first.path ?? '';
+    if (soundPath.isEmpty) return;
     
     // 파일 존재 확인
     if (soundPath == null || !await File(soundPath).exists()) {
