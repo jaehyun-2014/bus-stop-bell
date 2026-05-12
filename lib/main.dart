@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:android_intent_plus/android_intent.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:async';
 import 'package:flutter/services.dart';
-import 'package:flutter/foundation.dart';
 
 void main() {
   runApp(const SoundboardApp());
@@ -168,31 +166,13 @@ class _HomeScreenState extends State<HomeScreen> {
     if (imageResult == null) return;
     imagePath = imageResult.path;
 
-    // 파일 앱으로 음성 파일 선택
-    if (defaultTargetPlatform == TargetPlatform.android) {
-      try {
-        final AndroidIntent intent = AndroidIntent(
-          action: 'android.intent.action.GET_CONTENT',
-          type: 'audio/*',
-        );
-        final String? result = await intent.launchForResult();
-        if (result == null || result.isEmpty) return;
-        soundPath = result;
-      } catch (e) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('오류: 파일 앱을 열 수 없습니다')),
-        );
-        return;
-      }
-    } else {
-      final soundPathResult = await showDialog<String>(
-        context: context,
-        builder: (context) => _SoundPathInputDialog(),
-      );
-      if (soundPathResult == null || soundPathResult.isEmpty) return;
-      soundPath = soundPathResult;
-    }
+    // 음성 파일 경로 입력
+    final soundPathResult = await showDialog<String>(
+      context: context,
+      builder: (context) => _SoundPathInputDialog(),
+    );
+    if (soundPathResult == null || soundPathResult.isEmpty) return;
+    soundPath = soundPathResult;
     
     // 파일 존재 확인
     if (soundPath == null || !await File(soundPath).exists()) {
