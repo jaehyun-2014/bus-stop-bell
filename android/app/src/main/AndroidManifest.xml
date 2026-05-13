@@ -27,6 +27,27 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- Widget Provider -->
+        <receiver
+            android:name=".widget.SoundBoardWidgetProvider"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/soundboard_widget_info" />
+        </receiver>
+
+        <!-- Widget Click Receiver -->
+        <receiver
+            android:name=".widget.WidgetClickReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.manus.soundboard_flutter.WIDGET_CLICK" />
+            </intent-filter>
+        </receiver>
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
