@@ -24,7 +24,7 @@
       
         android:gradientRadius="8"
       
-        android:radius="6"/>
+        android:radius="6dp"/>
   
 </vector>
 
