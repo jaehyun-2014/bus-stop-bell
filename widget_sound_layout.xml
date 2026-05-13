@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    홈 화면 위젯의 UI 레이아웃입니다.
+    - ImageView: 사용자가 선택한 이미지를 표시합니다.
+    - TextView: 위젯 하단에 소리 이름을 표시합니다.
+    위젯 전체를 터치하면 소리가 재생됩니다.
+-->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_background"
+    android:padding="4dp">
+
+    <!-- 사용자가 선택한 이미지 -->
+    <ImageView
+        android:id="@+id/widget_image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/widget_label"
+        android:scaleType="centerCrop"
+        android:contentDescription="@string/widget_image_description"
+        android:src="@drawable/widget_default_image" />
+
+    <!-- 소리/이미지 이름 라벨 -->
+    <TextView
+        android:id="@+id/widget_label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="#80000000"
+        android:gravity="center"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:padding="4dp"
+        android:text="@string/widget_default_label"
+        android:textColor="#FFFFFF"
+        android:textSize="12sp" />
+
+    <!-- 재생 중 표시 오버레이 (선택 사항) -->
+    <ImageView
+        android:id="@+id/widget_play_icon"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_centerInParent="true"
+        android:layout_above="@+id/widget_label"
+        android:alpha="0.7"
+        android:src="@drawable/ic_play_circle"
+        android:visibility="gone"
+        android:contentDescription="@string/widget_play_description" />
+
+</RelativeLayout>
