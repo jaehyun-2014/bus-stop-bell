@@ -115,6 +115,37 @@ class _HomeScreenState extends State<HomeScreen> {
         return;
       }
 
+      if (!mounted) return;
+      
+      // 사용자에게 선택지 제공
+      final choice = await showDialog<String>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('배경화면 설정'),
+          content: const Text('어디에 설정하시겠습니까?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, 'lock'),
+              child: const Text('잠금화면'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, 'home'),
+              child: const Text('홈화면'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, 'both'),
+              child: const Text('둘 다'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('취소'),
+            ),
+          ],
+        ),
+      );
+
+      if (choice == null) return;
+
       // UI 업데이트 (배경화면 표시 상태)
       setState(() {
         for (var c in cards) {
@@ -125,7 +156,7 @@ class _HomeScreenState extends State<HomeScreen> {
       
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('배경화면으로 설정되었습니다!\n(My Files 앱에서 이미지를 길게 눌러 배경화면으로 설정하세요)')),
+        SnackBar(content: Text('배경화면으로 설정되었습니다!\n(설정 > 배경화면에서 확인하세요)')),
       );
     } catch (e) {
       if (!mounted) return;
