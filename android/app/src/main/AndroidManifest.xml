@@ -67,7 +67,18 @@
             <intent-filter>
                 
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                
+           <receiver
+    android:name=".SoundWidgetProvider"
+    android:exported="false">
+
+    <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+    </intent-filter>
+
+    <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/sound_widget_info"/>
+</receiver>     
             </intent-filter>
             
             <meta-data android:name="android.appwidget.provider"
